@@ -1,4 +1,4 @@
-(ns net.timsg.gamma-tools.core
+(ns gamma-tools.core
   (:refer-clojure :exclude [aget])
   (:require
    [clojure.clr.io :as io]
@@ -62,8 +62,11 @@
 ;; conversion to unity shaders
 ;; ============================================================
 
+(defn- prop-dec [name tag value]
+  (str name " (\"" name "\", " tag ") = " value))
+
 (defn- input-decl [{:keys [inputs]}]
-  (for [{:keys [name type]} inputs]
+  (for [{:keys [name type prop-tag prop-value]} inputs]
     (case type
       :vec2 (throw
               (Exception.
@@ -71,8 +74,9 @@
       :vec3 (throw
               (Exception.
                 (str "can't have vec3 input! name: " name)))
-      :vec4  (str name " (\"" name "\", Vector) = (0, 0, 0, 0)")
-      :float(str name " (\"" name "\", Float) = 0.0")
+      :vec4       (prop-dec name (or prop-tag "Vector") (or prop-value "(1,1,1,1)"))
+      :float      (prop-dec name (or prop-tag "Float")  (or prop-value "0.0"))
+      :sampler2D  (prop-dec name (or prop-tag "2D")     (or prop-value "\"white\" {}"))
       :else (throw
               (Exception.
                 (str
